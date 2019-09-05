@@ -9,7 +9,7 @@
 import UIKit
 import RealmSwift
 
-class ToDoListViewController: UITableViewController {
+class ToDoListViewController: SwipeTableViewController {
     
     var toDoItems : Results<Item>?
     let realm = try! Realm()
@@ -23,6 +23,7 @@ class ToDoListViewController: UITableViewController {
 
     override func viewDidLoad() {
         super.viewDidLoad()
+        tableView.rowHeight = 80.0
     }
     
     //MARK - TableView Datasource Methods
@@ -34,7 +35,7 @@ class ToDoListViewController: UITableViewController {
     }
 
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        let cell = tableView.dequeueReusableCell(withIdentifier: "ToDoItemList", for: indexPath)
+        let cell = super.tableView(tableView, cellForRowAt: indexPath)
         if let item = toDoItems?[indexPath.row] {
                 cell.textLabel?.text = item.title
                 cell.accessoryType = item.done == true ? .checkmark : .none
@@ -113,6 +114,19 @@ class ToDoListViewController: UITableViewController {
         tableView.reloadData()
     }
 
+    override func updateModel(at indexPath: IndexPath) {
+        if let itemToDelete = self.toDoItems?[indexPath.row]{
+            do {
+                try self.realm.write {
+                    self.realm.delete(itemToDelete)
+                    print("Data successfully deleted")
+                }
+            } catch {
+                print("Error deleting data \(error)")
+            }
+        }
+
+    }
 }
 
 extension ToDoListViewController: UISearchBarDelegate {
